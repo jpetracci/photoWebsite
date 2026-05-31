@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ photo.title or 'Photo' }}{% endblock %}
+{% block content %}
+<div class="photo-view">
+  <div class="photo-stage">
+    {% if prev_url %}
+      <a class="nav-btn prev" href="{{ prev_url }}" aria-label="Previous">&#10094;</a>
+    {% else %}
+      <span class="nav-btn prev disabled" aria-hidden="true">&#10094;</span>
+    {% endif %}
+
+    <img id="photo-img" src="{{ photo.url }}" alt="{{ photo.title }}">
+
+    {% if next_url %}
+      <a class="nav-btn next" href="{{ next_url }}" aria-label="Next">&#10095;</a>
+    {% else %}
+      <span class="nav-btn next disabled" aria-hidden="true">&#10095;</span>
+    {% endif %}
+  </div>
+
+  {% if photo.title %}<h1>{{ photo.title }}</h1>{% endif %}
+  {% if photo.info %}<p class="info">{{ photo.info }}</p>{% endif %}
+  {% if photo.tags %}
+    <p class="tags">
+      {% for t in photo.tags %}<span class="tag-chip">{{ t }}</span>{% endfor %}
+    </p>
+  {% endif %}
+  <p><a href="{{ back_url }}">&larr; back</a></p>
+
+  {% if session.get('user') %}
+    <details class="edit-box">
+      <summary>Edit</summary>
+      <form class="form" method="post"
+            action="{{ url_for('main.update_photo', photo_id=photo.id) }}">
+        <input type="hidden" name="next" value="{{ request.full_path }}">
+        <label>Title <input name="title" value="{{ photo.title }}"></label>
+        <label>Info <textarea name="info" rows="3">{{ photo.info }}</textarea></label>
+        <label>Tags <input name="tags" value="{{ photo.tags|join(', ') }}"
+                           placeholder="comma,separated"></label>
+        <button type="submit">Save</button>
+      </form>
+      <form method="post"
+            action="{{ url_for('main.delete_photo', photo_id=photo.id) }}"
+            onsubmit="return confirm('Delete this photo?')">
+        <button class="danger" type="submit">Delete photo</button>
+      </form>
+    </details>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    const prev = {{ (prev_url|tojson) if prev_url else 'null' }};
+    const next = {{ (next_url|tojson) if next_url else 'null' }};
+    document.addEventListener('keydown', e => {
+      // Ignore when typing in an input/textarea
+      const t = e.target.tagName;
+      if (t === 'INPUT' || t === 'TEXTAREA' || e.target.isContentEditable) return;
+      if (e.key === 'ArrowLeft' && prev) { window.location.href = prev; }
+      else if (e.key === 'ArrowRight' && next) { window.location.href = next; }
+    });
+  })();
+</script>
+{% endblock %}

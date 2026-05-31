@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Photos{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('main.index') }}">Photos</a>
+    <nav>
+      {% if session.get('user') %}
+        <a href="{{ url_for('main.admin') }}">Admin</a>
+        <form action="{{ url_for('main.logout') }}" method="post" style="display:inline">
+          <button class="link" type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('main.login') }}">Login</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}<div class="flash">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

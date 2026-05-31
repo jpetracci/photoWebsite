@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<section class="form">
+  <h1>Upload</h1>
+  <form method="post" action="{{ url_for('main.upload') }}" enctype="multipart/form-data">
+    <label>Photos <input type="file" name="photos" accept="image/*" multiple required></label>
+    <label>Title <input name="title" placeholder="optional (ignored for multi-upload)"></label>
+    <label>Info <textarea name="info" rows="3" placeholder="optional (ignored for multi-upload)"></textarea></label>
+    <label>Tags <input name="tags" placeholder="comma,separated,tags (applied to all)"></label>
+    <button type="submit">Upload</button>
+  </form>
+  <p class="muted">Tip: select multiple files at once. Tags are applied to every file in the batch; title/info are only saved when you upload a single file.</p>
+</section>
+
+<h2>All photos</h2>
+<div class="grid">
+  {% for p in photos %}
+    <div class="tile admin-tile">
+      <a href="{{ p.detail_url }}"><img loading="lazy" src="{{ p.thumb_url }}" alt=""></a>
+      <form method="post" action="{{ url_for('main.update_photo', photo_id=p.id) }}">
+        <input name="tags" value="{{ p.tags|join(', ') }}" placeholder="tags">
+        <button type="submit">Save tags</button>
+      </form>
+      <p><a href="{{ p.detail_url }}">Edit title / info →</a></p>
+      <form method="post" action="{{ url_for('main.delete_photo', photo_id=p.id) }}"
+            onsubmit="return confirm('Delete this photo?')">
+        <button class="danger" type="submit">Delete</button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

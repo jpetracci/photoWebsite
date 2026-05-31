@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="controls">
+  <div class="tag-list" id="tag-list">
+    {% for t in tags %}
+      <button class="tag" data-tag="{{ t }}">{{ t }}</button>
+    {% endfor %}
+    {% if not tags %}<span class="muted">No tags yet.</span>{% endif %}
+  </div>
+  <div class="mode">
+    Match:
+    <label><input type="radio" name="mode" value="any" checked> any</label>
+    <label><input type="radio" name="mode" value="all"> all</label>
+    <button id="clear" class="link">clear</button>
+  </div>
+</section>
+
+<section class="grid" id="grid">
+  {% for p in photos %}
+    <a class="tile" href="{{ p.detail_url }}">
+      <img loading="lazy" src="{{ p.thumb_url }}" alt="{{ p.title }}">
+    </a>
+  {% endfor %}
+  {% if not photos %}<p class="muted">No photos yet.</p>{% endif %}
+</section>
+
+<script>
+  const grid = document.getElementById('grid');
+  const tagList = document.getElementById('tag-list');
+  const selected = new Set();
+
+  function currentMode() {
+    return document.querySelector('input[name=mode]:checked').value;
+  }
+
+  async function refresh() {
+    const params = new URLSearchParams();
+    if (selected.size) params.set('tags', [...selected].join(','));
+    params.set('mode', currentMode());
+    const res = await fetch('/api/photos?' + params.toString());
+    const data = await res.json();
+    grid.innerHTML = data.photos.map(p => `
+      <a class="tile" href="${p.detail_url}">
+        <img loading="lazy" src="${p.thumb_url}" alt="${p.title}">
+      </a>`).join('') || '<p class="muted">No photos match.</p>';
+  }
+
+  tagList.addEventListener('click', e => {
+    const btn = e.target.closest('.tag');
+    if (!btn) return;
+    const t = btn.dataset.tag;
+    if (selected.has(t)) { selected.delete(t); btn.classList.remove('on'); }
+    else { selected.add(t); btn.classList.add('on'); }
+    refresh();
+  });
+
+  document.querySelectorAll('input[name=mode]').forEach(r =>
+    r.addEventListener('change', refresh));
+
+  document.getElementById('clear').addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.tag.on').forEach(b => b.classList.remove('on'));
+    refresh();
+  });
+</script>
+{% endblock %}
