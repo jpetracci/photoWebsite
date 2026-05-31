@@ -77,6 +77,10 @@ docker-compose.yml
 requirements.txt
 ```
 
+## License
+
+MIT — see [LICENSE](LICENSE).
+
 ## Notes / next steps
 
 - Auth is intentionally simple (one username/password from env vars).
